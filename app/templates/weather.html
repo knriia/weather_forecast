@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прогноз погоды</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <main class="container">
+        {% if city_name %}
+        <section class="weather-header">
+            <h1>Погода в {{ city_name }}</h1>
+            <p class="subtitle">{{ display_name }}</p>
+        </section>
+        {% endif %}
+
+        <section class="weather-grid">
+            {% if weather_data %}
+                {% for weather in weather_data %}
+                <article class="weather-card">
+                    <h3>{{ weather.date }}</h3>
+                    <div class="weather-metrics">
+                        <span>🌡 {{ weather.temperature_2m_mean | round(1) }}°C</span>
+                        <span>💧 {{ weather.precipitation_probability_mean | round(1) }}%</span>
+                    </div>
+                    <p class="weather-code">{{ weather.weather_code }}</p>
+                </article>
+                {% endfor %}
+            {% else %}
+                <p class="no-data">Нет данных для отображения</p>
+            {% endif %}
+        </section>
+
+        <section class="weather-form">
+            <form method="POST">
+                <div class="form-group">
+                    <label for="city_name">Город</label>
+                    <input
+                        type="text"
+                        id="city_name"
+                        name="city_name"
+                        value="{{ city_name }}"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="forecast_days">Дней прогноза</label>
+                    <input
+                        type="number"
+                        id="forecast_days"
+                        name="forecast_days"
+                        min="1"
+                        max="14"
+                        value="{{ forecast_days }}"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="submit-btn">Показать</button>
+
+                {% if error %}
+                <p class="error-message">{{ error }}</p>
+                {% endif %}
+            </form>
+        </section>
+    </main>
+<div class="history-section">
+    <h3>Ваша история поиска</h3>
+    <ul id="history-list">
+        {% for item in history %}
+        <li>
+            {{ item.city }} ({{ item.days }} дней) - {{ item.timestamp }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+    // Получение статистики через API
+    async function loadStats() {
+        const response = await fetch("/api/stats");
+        const data = await response.json();
+        console.log("Статистика:", data);
+        // Можно отобразить статистику на странице
+    }
+
+    // Вызываем при загрузке страницы
+    loadStats();
+</script>
+</body>
+</html>
